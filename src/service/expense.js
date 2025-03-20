@@ -11,7 +11,7 @@ const getAll = ({ userId, categories, from, to }) => {
   if (categories && categories.length > 0) {
     whereClause.category = Array.isArray(categories)
       ? { [Op.in]: categories }
-      : categories;
+      : { [Op.eq]: categories };
   }
 
   if (from && to) {
