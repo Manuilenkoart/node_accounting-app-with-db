@@ -1,52 +1,48 @@
-const checkIsValidSchema = require('../utils/checkIsValidSchema');
+const { sequelize } = require('../db');
+const { DataTypes } = require('sequelize');
 
-let USERS = [];
-let USERS_ID = 1;
-
-const UserSchema = {
-  id: 'number',
-  name: 'string',
-};
+const UserSchema = sequelize.define(
+  'User',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    tableName: 'users',
+    createdAt: false,
+    updatedAt: false,
+  },
+);
 
 const getAll = () => {
-  return USERS;
+  return UserSchema.findAll({
+    order: ['name'],
+  });
 };
 
 const getById = (id) => {
-  return USERS.find((item) => item.id === id);
+  return UserSchema.findByPk(id);
 };
 
 const create = ({ name }) => {
-  const user = {
-    name,
-    id: USERS_ID,
-  };
+  // await sequelize.sync();
 
-  if (!checkIsValidSchema(UserSchema, user)) {
-    return null;
-  }
-
-  USERS.push(user);
-
-  USERS_ID++;
-
-  return user;
+  return UserSchema.create({ name });
 };
 
 const remove = (id) => {
-  USERS = USERS.filter((user) => user.id !== id);
+  return UserSchema.destroy({ where: { id } });
 };
 
-const update = (id, name) => {
-  const user = getById(id);
-
-  Object.assign(user, { ...user, name });
-
-  return user;
-};
-
-const clear = () => {
-  USERS = [];
+const update = async (id, name) => {
+  return UserSchema.update({ name }, { where: { id } });
 };
 
 module.exports = {
@@ -55,5 +51,4 @@ module.exports = {
   getById,
   remove,
   update,
-  clear,
 };

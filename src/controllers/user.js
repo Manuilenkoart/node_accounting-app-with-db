@@ -1,7 +1,7 @@
 const { userService } = require('../service');
 
-const create = (req, res) => {
-  const newRecord = userService.create(req.body);
+const create = async (req, res) => {
+  const newRecord = await userService.create(req.body);
 
   if (!newRecord) {
     return res.sendStatus(400);
@@ -10,20 +10,20 @@ const create = (req, res) => {
   res.status(201).send(newRecord);
 };
 
-const getAll = (req, res) => {
-  const data = userService.getAll();
+const getAll = async (req, res) => {
+  const data = await userService.getAll();
 
   res.send(data);
 };
 
-const getById = (req, res) => {
+const getById = async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
     return res.sendStatus(400);
   }
 
-  const record = userService.getById(+id);
+  const record = await userService.getById(+id);
 
   if (!record) {
     return res.sendStatus(404);
@@ -32,25 +32,25 @@ const getById = (req, res) => {
   res.send(record);
 };
 
-const remove = (req, res) => {
+const remove = async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
     return res.sendStatus(400);
   }
 
-  const record = userService.getById(+id);
+  const record = await userService.getById(+id);
 
   if (!record) {
     return res.sendStatus(404);
   }
 
-  userService.remove(+id);
+  await userService.remove(+id);
 
   res.sendStatus(204);
 };
 
-const patch = (req, res) => {
+const patch = async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
 
@@ -58,13 +58,13 @@ const patch = (req, res) => {
     return res.sendStatus(400);
   }
 
-  const user = userService.getById(+id);
+  const user = await userService.getById(+id);
 
   if (!user) {
     return res.sendStatus(404);
   }
 
-  const updated = userService.update(+id, name);
+  const updated = await userService.update(+id, name);
 
   res.send(updated);
 };

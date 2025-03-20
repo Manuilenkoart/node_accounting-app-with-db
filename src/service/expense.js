@@ -1,70 +1,97 @@
-const checkIsValidSchema = require('../utils/checkIsValidSchema');
-const compareDates = require('../utils/compareDates');
+const { DataTypes, Op } = require('sequelize');
+const { sequelize } = require('../db');
 
-const ExpenseSchema = {
-  id: 'number',
-  userId: 'number',
-  spentAt: 'string',
-  title: 'string',
-  amount: 'number',
-  category: 'string',
-  note: 'string',
-};
+const ExpenseSchema = sequelize.define(
+  'Expense',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      field: 'user_id',
+      allowNull: false,
+    },
+    spentAt: {
+      type: DataTypes.STRING,
+      field: 'spent_at',
+      allowNull: false,
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    amount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    note: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    tableName: 'expenses',
+    createdAt: false,
+    updatedAt: false,
+  },
+);
 
-let EXPENSE = [];
-let EXPENSE_ID = 1;
+const EXPENSE = [];
 
 const getAll = ({ userId, categories, from, to }) => {
-  return EXPENSE.filter((e) => {
-    const matchesUserId = userId ? e.userId === +userId : true;
-    const matchesCategory = categories ? categories.includes(e.category) : true;
-    const matchesFrom = from ? compareDates('from', from, e.spentAt) : true;
-    const matchesTo = to ? compareDates('to', to, e.spentAt) : true;
+  const whereClause = {};
 
-    return matchesUserId && matchesCategory && matchesFrom && matchesTo;
+  if (userId) {
+    whereClause.userId = +userId;
+  }
+
+  if (categories && categories.length > 0) {
+    whereClause.category = Array.isArray(categories)
+      ? { [Op.in]: categories }
+      : categories;
+  }
+
+  if (from && to) {
+    whereClause.spentAt = {
+      [Op.between]: [from, to],
+    };
+  }
+
+  return ExpenseSchema.findAll({
+    where: whereClause,
   });
 };
 
 const getById = (id) => {
-  return EXPENSE.find((item) => item.id === id);
+  return ExpenseSchema.findByPk(id);
 };
 
 const create = ({ userId, spentAt, title, amount, category, note }) => {
-  const expense = {
-    id: EXPENSE_ID,
+  // await sequelize.sync();
+
+  return ExpenseSchema.create({
     userId,
     spentAt,
     title,
     amount,
     category,
     note,
-  };
-
-  if (!checkIsValidSchema(ExpenseSchema, expense)) {
-    return null;
-  }
-
-  EXPENSE.push(expense);
-
-  EXPENSE_ID++;
-
-  return expense;
+  });
 };
 
 const remove = (id) => {
-  EXPENSE = EXPENSE.filter((expense) => expense.id !== id);
+  return ExpenseSchema.destroy({ where: { id } });
 };
 
 const update = (id, dataToUpdate) => {
-  const expense = getById(id);
-
-  Object.assign(expense, dataToUpdate);
-
-  return expense;
-};
-
-const clear = () => {
-  EXPENSE = [];
+  return ExpenseSchema.update({ ...dataToUpdate }, { where: { id } });
 };
 
 module.exports = {
@@ -73,5 +100,4 @@ module.exports = {
   getById,
   remove,
   update,
-  clear,
 };
