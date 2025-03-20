@@ -1,49 +1,5 @@
-const { DataTypes, Op } = require('sequelize');
-const { sequelize } = require('../db');
-
-const ExpenseSchema = sequelize.define(
-  'Expense',
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      field: 'user_id',
-      allowNull: false,
-    },
-    spentAt: {
-      type: DataTypes.STRING,
-      field: 'spent_at',
-      allowNull: false,
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    amount: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    note: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-  },
-  {
-    tableName: 'expenses',
-    createdAt: false,
-    updatedAt: false,
-  },
-);
-
-const EXPENSE = [];
+const { Op } = require('sequelize');
+const { Expense } = require('../models/Expense.model');
 
 const getAll = ({ userId, categories, from, to }) => {
   const whereClause = {};
@@ -64,34 +20,27 @@ const getAll = ({ userId, categories, from, to }) => {
     };
   }
 
-  return ExpenseSchema.findAll({
+  return Expense.findAll({
     where: whereClause,
   });
 };
 
 const getById = (id) => {
-  return ExpenseSchema.findByPk(id);
+  return Expense.findByPk(id);
 };
 
-const create = ({ userId, spentAt, title, amount, category, note }) => {
+const create = (fields) => {
   // await sequelize.sync();
 
-  return ExpenseSchema.create({
-    userId,
-    spentAt,
-    title,
-    amount,
-    category,
-    note,
-  });
+  return Expense.create(fields);
 };
 
 const remove = (id) => {
-  return ExpenseSchema.destroy({ where: { id } });
+  return Expense.destroy({ where: { id } });
 };
 
 const update = (id, dataToUpdate) => {
-  return ExpenseSchema.update({ ...dataToUpdate }, { where: { id } });
+  return Expense.update(dataToUpdate, { where: { id } });
 };
 
 module.exports = {

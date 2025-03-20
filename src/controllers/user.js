@@ -1,11 +1,13 @@
 const { userService } = require('../service');
 
 const create = async (req, res) => {
-  const newRecord = await userService.create(req.body);
+  const user = req.body;
 
-  if (!newRecord) {
+  if (!user.name) {
     return res.sendStatus(400);
   }
+
+  const newRecord = await userService.create(user);
 
   res.status(201).send(newRecord);
 };
@@ -58,15 +60,15 @@ const patch = async (req, res) => {
     return res.sendStatus(400);
   }
 
-  const user = await userService.getById(+id);
-
-  if (!user) {
-    return res.sendStatus(404);
-  }
-
   const updated = await userService.update(+id, name);
 
-  res.send(updated);
+  if (!updated) {
+    return res.sendStatus(400);
+  }
+
+  const user = await userService.getById(+id);
+
+  res.send(user);
 };
 
 module.exports = {

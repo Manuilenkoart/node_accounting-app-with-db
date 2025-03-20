@@ -7,11 +7,17 @@ const create = async (req, res) => {
     return res.sendStatus(400);
   }
 
-  const newRecord = await expenseService.create(req.body);
+  const requiredKeys = ['spentAt', 'title', 'amount', 'userId'];
 
-  if (!newRecord) {
+  const passedKeys = Object.keys(req.body);
+
+  const hasAllKeys = requiredKeys.every((key) => passedKeys.includes(key));
+
+  if (!hasAllKeys) {
     return res.sendStatus(400);
   }
+
+  const newRecord = await expenseService.create(req.body);
 
   res.status(201).send(newRecord);
 };
@@ -71,7 +77,13 @@ const patch = async (req, res) => {
 
   const updated = await expenseService.update(+id, req.body);
 
-  res.send(updated);
+  if (!updated) {
+    return res.sendStatus(400);
+  }
+
+  const expenseUpdated = await expenseService.getById(+id);
+
+  res.send(expenseUpdated);
 };
 
 module.exports = {
